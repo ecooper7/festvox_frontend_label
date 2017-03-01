@@ -1,0 +1,46 @@
+#!/bin/sh
+# ecooper 2/27/2017
+# set up a festival/festvox frontend 
+# and make labels for your training data.
+# you must have festival, festvox, and Edinburgh speech tools installed
+# and the $FESTVOXDIR end $ESTDIR variables set in your environment.
+# $FESTVOXDIR e.g. /path/to/your/installation/of/festvox
+# $ESTDIR e.g. /path/to/your/speech_tools
+
+## globals -- fill these in with your own values
+MY_INST=yourinstname
+MY_LANG=yourlangname
+MY_VOICE=yourvoicename
+MY_WAVS=/path/to/your/wavdir ## must be an absolute path
+MY_LEX=/path/to/your/lex.scm
+MY_TDD=/path/to/your/text.done.data ## training sentences that correspond with wavs
+MY_PHONESET=/path/to/your/phoneset.scm
+
+# basic setup -- copy things over
+$FESTVOXDIR/src/unitsel/setup_clunits $MY_INST $MY_LANG $MY_VOICE
+$FESTVOXDIR/src/prosody/setup_prosody
+
+# create etc/voice.defs, containing some global variables
+echo "FV_INST=$MY_INST" >etc/voice.defs
+echo "FV_LANG=$MY_LANG" >>etc/voice.defs
+echo "FV_NAME=$MY_VOICE" >>etc/voice.defs
+echo "FV_VOICENAME=\$FV_INST\"_\"\$FV_LANG\"_\"\$FV_NAME" >>etc/voice.defs
+echo "FV_FULLVOICENAME=\$FV_VOICENAME\"_\"\$FV_TYPE" >>etc/voice.defs
+. ./etc/voice.defs
+ 
+# copy in your own data
+ln -s $MY_WAVS/*.wav ./wav/
+cp $MY_LEX ./festvox/lex.scm
+cp $MY_TDD ./etc/txt.done.data
+cp $MY_PHONESET ./festvox/${FV_VOICENAME}_phoneset.scm
+
+# sort and format lexicon
+$ESTDIR/../festival/bin/festival -b festvox/${FV_VOICENAME}_phoneset.scm '(set! lex_syllabification nil)' '(lex.compile "festvox/lex.scm" "festvox/'$FV_INST'_'$FV_LANG'_lex.out")'
+
+./bin/do_build parallel build_prompts $MY_TDD
+# do EHMM alignment
+./bin/do_build label $MY_TDD
+# create utts for training data
+$ESTDIR/../festival/bin/festival --heap 20000000 -b festvox/build_clunits.scm '(set! split_long_silences nil)' '(build_utts "'$MY_TDD'")'  
+
+echo "done"
