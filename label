@@ -19,13 +19,6 @@ MY_PHONESET=/path/to/your/phoneset.scm
 # basic setup -- copy things over
 $FESTVOXDIR/src/unitsel/setup_clunits $MY_INST $MY_LANG $MY_VOICE
 $FESTVOXDIR/src/prosody/setup_prosody
-
-# create etc/voice.defs, containing some global variables
-echo "FV_INST=$MY_INST" >etc/voice.defs
-echo "FV_LANG=$MY_LANG" >>etc/voice.defs
-echo "FV_NAME=$MY_VOICE" >>etc/voice.defs
-echo "FV_VOICENAME=\$FV_INST\"_\"\$FV_LANG\"_\"\$FV_NAME" >>etc/voice.defs
-echo "FV_FULLVOICENAME=\$FV_VOICENAME\"_\"\$FV_TYPE" >>etc/voice.defs
 . ./etc/voice.defs
  
 # copy in your own data
