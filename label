@@ -1,19 +1,20 @@
 #!/bin/sh
 # ecooper 2/27/2017
 # set up a festival/festvox frontend 
-# and make labels for your training data.
+# and make labels for your training and test data.
 # you must have festival, festvox, and Edinburgh speech tools installed
 # and the $FESTVOXDIR end $ESTDIR variables set in your environment.
 # $FESTVOXDIR e.g. /path/to/your/installation/of/festvox
 # $ESTDIR e.g. /path/to/your/speech_tools
 
-## globals -- fill these in with your own values
+## globals
 MY_INST=yourinstname
 MY_LANG=yourlangname
 MY_VOICE=yourvoicename
 MY_WAVS=/path/to/your/wavdir ## must be an absolute path
 MY_LEX=/path/to/your/lex.scm
-MY_TDD=/path/to/your/text.done.data ## training sentences that correspond with wavs
+MY_TDD=/path/to/your/txt.done.data ## training data with corresponding wavs
+MY_TDD_TEST=/path/to/your/txt.done.data.test  ## test utts
 MY_PHONESET=/path/to/your/phoneset.scm
 
 # basic setup -- copy things over
@@ -25,15 +26,36 @@ $FESTVOXDIR/src/prosody/setup_prosody
 ln -s $MY_WAVS/*.wav ./wav/
 cp $MY_LEX ./festvox/lex.scm
 cp $MY_TDD ./etc/txt.done.data
+cp $MY_TDD_TEST ./etc/txt.done.data.test
 cp $MY_PHONESET ./festvox/${FV_VOICENAME}_phoneset.scm
 
 # sort and format lexicon
 $ESTDIR/../festival/bin/festival -b festvox/${FV_VOICENAME}_phoneset.scm '(set! lex_syllabification nil)' '(lex.compile "festvox/lex.scm" "festvox/'$FV_INST'_'$FV_LANG'_lex.out")'
 
-./bin/do_build parallel build_prompts $MY_TDD
-# do EHMM alignment
+# create prompts, do EHMM alignments, and create training data utts.
+./bin/do_build build_prompts $MY_TDD
 ./bin/do_build label $MY_TDD
-# create utts for training data
-$ESTDIR/../festival/bin/festival --heap 20000000 -b festvox/build_clunits.scm '(set! split_long_silences nil)' '(build_utts "'$MY_TDD'")'  
+./bin/do_build build_utts $MY_TDD
+
+# move some stuff out of the way
+mv prompt-utt prompt-utt-train
+mv lab lab-train
+mv festival/utts festival/utts-train
+mkdir prompt-utt
+mkdir lab
+mkdir festival/utts
+
+# create prompts, create fake alignment files, and create test data utts.
+./bin/do_build build_prompts $MY_TDD_TEST
+for u in prompt-utt/*.utt; do
+   b=`basename $u .utt`
+   grep "dur_factor" $u | sed 's:"::g' | awk '{print "0 0 " $6}' >> lab/$b.lab
+done
+./bin/do_build build_utts $MY_TDD_TEST
+
+# label test stuff as test
+mv prompt-utt prompt-utt-test
+mv lab lab-test
+mv festival/utts festival/utts-test
 
 echo "done"
