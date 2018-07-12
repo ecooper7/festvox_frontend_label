@@ -1,7 +1,7 @@
 # festvox_frontend_label
 
 This is a minimum example of how to use Festvox (http://festvox.org/) to make labels in .utt format for your data.
-You must provide utterances in .wav format, their transcripts in txt.done.data format, your lexicon in Festival lex.scm format, and your phoneset in Festival phoneset.scm format.  You can find examples of these files in the voice directories for existing voices, or read about these formats in the Festival/Festvox documentation.  If you are only using the Festival frontend to create labels that you will use with a different backend, then your phoneset.scm does not have to contain any features (vowel, nasalized, etc), i.e. it can effectively just be a list of phones (in that .scm format).
+You must provide utterances in .wav format, their transcripts in txt.done.data format, your lexicon in Festival lex.scm format, and your phoneset in Festival phoneset.scm format.  You can find examples of these files in the voice directories for existing voices, or read about these formats in the Festival/Festvox documentation.  If you are only using the Festival frontend to create labels that you will use with a different backend, then your phoneset.scm does not have to contain most features (nasalized, etc), i.e. it can effectively just be a list of phones (in that .scm format) -- however, you should make sure that vowels and consonants are properly marked (vc + - ) because when converting to HTS-style labels, it uses this information to populate the "syllable vowel" feature.
 
 To use this script: <br>
 1) mkdir <i>yourvoicename</i> <br>
