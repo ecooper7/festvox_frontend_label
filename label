@@ -33,9 +33,9 @@ cp $MY_PHONESET ./festvox/${FV_VOICENAME}_phoneset.scm
 $ESTDIR/../festival/bin/festival -b festvox/${FV_VOICENAME}_phoneset.scm '(set! lex_syllabification nil)' '(lex.compile "festvox/lex.scm" "festvox/'$FV_INST'_'$FV_LANG'_lex.out")'
 
 # create prompts, do EHMM alignments, and create training data utts.
-./bin/do_build build_prompts $MY_TDD
-./bin/do_build label $MY_TDD
-./bin/do_build build_utts $MY_TDD
+./bin/do_build build_prompts etc/txt.done.data
+./bin/do_build label etc/txt.done.data
+./bin/do_build build_utts etc/txt.done.data
 
 # move some stuff out of the way
 mv prompt-utt prompt-utt-train
@@ -51,7 +51,7 @@ for u in prompt-utt/*.utt; do
    b=`basename $u .utt`
    grep "dur_factor" $u | sed 's:"::g' | awk '{print "0 0 " $6}' >> lab/$b.lab
 done
-./bin/do_build build_utts $MY_TDD_TEST
+./bin/do_build build_utts etc/txt.done.data.test
 
 # label test stuff as test
 mv prompt-utt prompt-utt-test
