@@ -7,6 +7,6 @@ To use this script: <br>
 1) mkdir <i>yourvoicename</i> <br>
 2) edit the label script, fill in the global variables with your values <br>
 3) cd <i>yourvoicename</i> <br>
-4) run the label script <br>
+4) run the label script: `./label` <br>
 
 .utt format label files will be under <i>yourvoicename</i>/festival/utt/. 
